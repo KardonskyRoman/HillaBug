@@ -17,7 +17,7 @@ import java.util.List;
 @BrowserCallable
 // Until https://github.com/vaadin/hilla/issues/3271 is fixed, @PreAuthorize needs to be combined with @AnonymousAllowed
 @AnonymousAllowed
-@PreAuthorize("isAuthenticated()")
+//@PreAuthorize("isAuthenticated()")
 public class TaskService {
 
     private final TaskRepository taskRepository;

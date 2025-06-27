@@ -1,12 +1,13 @@
-import { ViewConfig } from '@vaadin/hilla-file-router/types.js';
-import { Button, DatePicker, Grid, GridColumn, TextField } from '@vaadin/react-components';
-import { Notification } from '@vaadin/react-components/Notification';
-import { TaskService } from 'Frontend/generated/endpoints';
-import { useSignal } from '@vaadin/hilla-react-signals';
-import handleError from 'Frontend/views/_ErrorHandler';
+import { Button, DatePicker, Grid, GridActiveItemChangedEvent, GridColumn, TextField } from '@vaadin/react-components';
 import { Group, ViewToolbar } from 'Frontend/components/ViewToolbar';
+
+import { Notification } from '@vaadin/react-components/Notification';
 import Task from 'Frontend/generated/com/example/app/taskmanagement/domain/Task';
+import { TaskService } from 'Frontend/generated/endpoints';
+import { ViewConfig } from '@vaadin/hilla-file-router/types.js';
+import handleError from 'Frontend/views/_ErrorHandler';
 import { useDataProvider } from '@vaadin/hilla-react-crud';
+import { useSignal } from '@vaadin/hilla-react-signals';
 
 export const config: ViewConfig = {
   title: 'Task List',
@@ -15,7 +16,7 @@ export const config: ViewConfig = {
     order: 1,
     title: 'Task List',
   },
-  loginRequired: true,
+  loginRequired: false,
 };
 
 const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
@@ -74,6 +75,12 @@ export default function TaskListView() {
   const dataProvider = useDataProvider<Task>({
     list: (pageable) => TaskService.list(pageable),
   });
+  const selectedItem = useSignal<Task | null>(null);
+
+  const onSelectItem = (e: GridActiveItemChangedEvent<any>) => {
+		const item = e.detail.value;
+		selectedItem.value = item ?? null;
+	}
 
   return (
     <main className="w-full h-full flex flex-col box-border gap-s p-m">
@@ -82,7 +89,13 @@ export default function TaskListView() {
           <TaskEntryForm onTaskCreated={dataProvider.refresh} />
         </Group>
       </ViewToolbar>
-      <Grid dataProvider={dataProvider.dataProvider}>
+      <Grid 
+      pageSize={10}
+      dataProvider={dataProvider.dataProvider}
+      selectedItems={selectedItem.value == null ? [] : [selectedItem.value]}
+			onActiveItemChanged={onSelectItem}
+      itemIdPath="id"
+      >
         <GridColumn path="description" />
         <GridColumn path="dueDate" header="Due Date">
           {({ item }) => (item.dueDate ? dateFormatter.format(new Date(item.dueDate)) : 'Never')}
