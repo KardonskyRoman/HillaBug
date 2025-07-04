@@ -42,7 +42,7 @@ public class TaskService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
-    public List<Task> list(Pageable pageable) {
+    public @Nullable List<Task> list(Pageable pageable) {
         return taskRepository.findAllBy(pageable).toList();
     }
 
